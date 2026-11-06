@@ -1,0 +1,63 @@
+# WorkWell configuration
+#
+# Everything here is read by the running app (workwell.config.Config).
+# Environment overrides win over this file:
+#   WORKWELL_SERVER_PORT=9000
+#   WORKWELL_STORAGE_PATH=/tmp/workwell.db
+#   WORKWELL_CHANNELS_NOISE_INTERVAL=1
+# Point WORKWELL_CONFIG_DIR at another directory to use a different file.
+
+server:
+  host: 127.0.0.1
+  port: 8000
+
+storage:
+  path: data/workwell.db   # relative paths resolve against the working directory
+  prune_days: 30           # auto-delete readings older than this (0 disables)
+
+channels:
+  greenery:
+    enabled: true
+    interval: 4.0          # seconds between captures
+    camera_index: 0
+    resolution: [320, 240] # small on purpose: fast frame processing
+    green_hue_range: [35, 85]
+    saturation_min: 40
+    value_min: 40
+
+  noise:
+    enabled: true
+    interval: 2.0
+    capture_duration: 0.5  # seconds of audio per reading
+    sample_rate: 16000
+
+  air:
+    enabled: true
+    interval: 15.0
+    backend: auto          # auto | serial | i2c | spi | mock
+    serial_port: /dev/ttyUSB0
+    sample_count: 10
+    # i2c: {address: 0x48, channel: 0}   # ADS1115 (MQ-135 on a Pi)
+
+  mood:
+    enabled: false         # requires the [ml] extra (DeepFace + TensorFlow)
+    interval: 10.0
+    camera_index: 0
+    confidence_threshold: 0.4
+
+  presence:
+    enabled: true
+    interval: 8.0
+    camera_index: 0
+
+simulation:
+  interval: 2.0            # seconds between simulated ticks
+  default_scenario: calm
+
+wellness:
+  window_minutes: 30       # how much recent data feeds the score
+  weights:                 # renormalized automatically when a channel has no data
+    greenery: 0.3
+    noise: 0.3
+    air: 0.2
+    mood: 0.2

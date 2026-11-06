@@ -1,0 +1,85 @@
+[build-system]
+requires = ["setuptools>=65.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "workwell"
+version = "2.0.0"
+description = "Local, privacy-first workspace wellness monitoring: greenery, noise, air quality and mood in one wellness score."
+readme = "README.md"
+license = { text = "MIT" }
+requires-python = ">=3.9"
+authors = [{ name = "Salman Al-Sahli" }]
+keywords = ["wellness", "sensors", "privacy", "monitoring", "computer-vision", "fastapi"]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Environment :: Web Environment",
+    "Intended Audience :: End Users/Desktop",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Topic :: Home Automation",
+]
+
+dependencies = [
+    "fastapi>=0.104.0",
+    "uvicorn[standard]>=0.24.0",
+    "websockets>=12.0",
+    "pydantic>=2.0.0",
+    "pyyaml>=6.0",
+    "numpy>=1.24.0",
+    "psutil>=5.9.0",
+]
+
+[project.optional-dependencies]
+# Real camera/mic sensing (webcam + microphone). Everything else runs
+# without them via simulation mode.
+sensors = [
+    "opencv-python>=4.8.0",
+    "sounddevice>=0.4.6",
+]
+# Emotion analysis (mood channel). Heavy: pulls TensorFlow.
+# This is what overheated the original Raspberry Pi build, so it is
+# deliberately an opt-in extra.
+ml = [
+    "deepface>=0.0.92",
+]
+# Gas sensor hardware (MQ-135 via ADC), for Raspberry Pi deployments.
+hardware = [
+    "pyserial>=3.5.0",
+    "adafruit-circuitpython-ads1x15>=1.1.0",
+]
+dev = [
+    "pytest>=7.4.0",
+    "pytest-cov>=4.1.0",
+    "httpx>=0.25.0",
+    "ruff>=0.4.0",
+]
+
+[project.scripts]
+workwell = "workwell.app:main"
+
+[project.urls]
+Homepage = "https://github.com/XGradien/WorkWell"
+Repository = "https://github.com/XGradien/WorkWell"
+Issues = "https://github.com/XGradien/WorkWell/issues"
+
+[tool.setuptools.packages.find]
+include = ["workwell*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q --tb=short"
+
+[tool.ruff]
+line-length = 100
+target-version = "py39"
+
+[tool.ruff.lint]
+# E4/E7/E9 (ruff's default pycodestyle subset), bugs (F), warnings (W),
+# import order (I) and modernization (UP). E501 line-length is deliberately
+# out: long literal lines (recommendation text, channel descriptions) read
+# better unwrapped. BLE001 (broad `except Exception`) is also deliberate:
+# catching at the hardware boundary is the design — a sensor must never be
+# able to crash the polling loop.
+select = ["E4", "E7", "E9", "F", "W", "I", "UP"]
